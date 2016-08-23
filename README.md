@@ -1,2 +1,3 @@
 # uhura-dialog-manager
-The dialog manager that connects the user with Uhura's planning service. 
+
+The dialog management package for the Echo interface for Uhura. It connects the users' speech inputs with Uhura's planning services.
