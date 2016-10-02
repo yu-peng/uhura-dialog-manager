@@ -50,6 +50,7 @@ public class Manager {
 	public static Location tripDestination = null;
 	
 	public static ArrayList<String> prevDecisions = new ArrayList<String>();	
+	public static ArrayList<String> prevCCRelaxations = new ArrayList<String>();	
 	public static ArrayList<String> prevTemporalRelaxations = new ArrayList<String>();	
 	public static ArrayList<String> prevSemanticRelaxations = new ArrayList<String>();	
 	public static HashSet<String> agreedTemporalRelaxations = new HashSet<String>();	
@@ -76,16 +77,17 @@ public class Manager {
 		currentSession = null;
 		currentSessionState = Manager.START;
 		
-		currentPlanningProblem = new Problem("Echo",TransitMode.walking);
+		currentPlanningProblem = new Problem("Echo",TransitMode.driving);
 		currentSolution = null;
 		allSolutions.clear();
 		problemChanged = true;
-		prevDecisions = new ArrayList<String>();	
+		prevDecisions = new ArrayList<String>();
+		prevCCRelaxations = new ArrayList<String>();
 		prevTemporalRelaxations = new ArrayList<String>();
 		prevSemanticRelaxations = new ArrayList<String>();
 		agreedTemporalRelaxations = new HashSet<String>();
 		
-		tripOrigin = new Location("MIT",42.361602, -71.090568);
+		tripOrigin = new Location("Home",42.359954, -71.102263);
 //		tripOrigin = new Location("Hilton Midtown",40.762283, -73.979691);
 				
 		tripOrigin.setDepartureTime(String.format("%02d", departureHour) + ":" + String.format("%02d", departureMinute));
@@ -163,72 +165,6 @@ public class Manager {
 				currentSessionState = GOAL_COLLECTION;
 				
 				StringBuilder sb = new StringBuilder();
-				
-//				if (destination.equalsIgnoreCase("Penn Station") 
-//						|| destination.equalsIgnoreCase("Grand Central")
-//						|| destination.equalsIgnoreCase("South Station")
-//						|| destination.equalsIgnoreCase("Logan Airport")
-//						|| destination.equalsIgnoreCase("Home")){
-//					
-//				     switch (destination.toUpperCase()) {
-//				         case "PENN STATION":
-//				        	 tripDestination = new Location("Penn Station", 40.750584, -73.993487);
-//				             break;
-//				         case "GRAND CENTRAL":
-//				        	 tripDestination = new Location("Grand Central Terminal", 40.752675, -73.977396);
-//				             break;
-//				         case "SOUTH STATION":
-//				        	 tripDestination = new Location("South Station", 42.351952, -71.055110);
-//				             break;
-//				         case "LOGAN AIRPORT":
-//				        	 tripDestination = new Location("Logan Airport", 42.365781, -71.007049);
-//				             break;
-//				         case "HOME":
-//				        	 tripDestination = new Location("Home", 42.357406, -71.107672);
-//				             break;
-//				         default:
-//				        	 tripDestination = new Location("Home", 42.357406, -71.107672);
-//				     }
-//					
-//					
-//					
-//					if (!time.isEmpty()){
-//						tripDestination.setArrivalTime(time);
-//					} else if (!duration.isEmpty()){
-//						try {
-//							Duration dur = DatatypeFactory.newInstance().newDuration(duration);
-//							
-//							int hours = dur.getHours() + departureHour;
-//							int minutes = dur.getMinutes() + departureMinute;
-//							
-//							while (minutes >= 60){
-//								minutes -= 60;
-//								hours++;
-//							}
-//							
-//							if (dur.getMinutes() < 10){
-//								tripDestination.setArrivalTime((18+hours) + ":0" + minutes);
-//							} else {
-//								tripDestination.setArrivalTime((18+hours) + ":" + minutes);
-//							}
-//							
-//							tripDestination.setArrivalTime(String.format("%02d", hours) + ":" + String.format("%02d", minutes));
-//
-//							
-//						} catch (DatatypeConfigurationException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}						
-//					} else {
-//						tripDestination.setArrivalTime("19:00");
-//					}
-//					
-//					tripDestination.setRelaxable(true);
-//					currentPlanningProblem.setDestination(tripDestination);
-//					
-//					sb.append("OK, trip destination is set to " + destination + " with an arrival time at " + tripDestination.getArrivalTime() + ".");
-//					
-//				} else {
 					
 				String destinationName = null;
 //					String destinationName = destination;
@@ -267,11 +203,16 @@ public class Manager {
 				if (newTask.getDuration() < 0.01){
 					newTask.setDuration(30.0);
 				}
-//					newTask.setRelaxable(true);
 
-				sb.append("OK, stop at " + destinationName + " for " + Math.round(newTask.getDuration()) + " minutes.");
-//				}				
-				
+				int randomNum = (int) (Math.random() * 3);
+				if (randomNum == 0){
+					sb.append("OK, stop at " + destinationName + " for " + Math.round(newTask.getDuration()) + " minutes.");
+				} else if (randomNum == 1){
+					sb.append("OK, going to " + destinationName + " for " + Math.round(newTask.getDuration()) + " minutes.");
+				} else {
+					sb.append("OK, ");
+				}
+
 				try {
 					
 					result.put("text_output", sb.toString() + " Anything else?");
@@ -374,10 +315,11 @@ public class Manager {
 					tripDestination.setArrivalTime("19:00");
 				}
 				
-				tripDestination.setRelaxable(true);
+//				tripDestination.setRelaxable(true);
 				currentPlanningProblem.setDestination(tripDestination);
 				
-				sb.append("OK, trip destination is set to " + destination + " with an arrival time at " + tripDestination.getArrivalTime() + ".");		
+//				sb.append("OK, trip destination is set to " + destination + " with an arrival time at " + tripDestination.getArrivalTime() + ".");		
+				sb.append("Got it, ");		
 				
 				try {
 					
@@ -897,6 +839,48 @@ public class Manager {
 		return result;
 	}
 	
+	@Path("/SendDeclineCCRelaxation")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public JSONObject sendDeclineCCRelaxation(
+			@DefaultValue("0.0") @QueryParam("newCC") double newCC) {
+		
+		JSONObject result = new JSONObject();
+		
+		if (currentSessionState == SOLUTION_FOUND) {
+						
+			// The current solution is rejected by the users.
+			// Ask for more input on why.
+			
+			JSONArray ccRelaxations = currentSolution.getCCRelaxations();
+			if (ccRelaxations != null && ccRelaxations.length() > 0){
+				try {
+					addCCAndReplan(currentPlanningProblem, newCC);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					plan();
+				}
+			} else {
+				plan();
+			}
+			
+			presentSolution(result);
+			
+		} else {
+			// This is not an expected response.
+			
+			try {
+				result.put("text_output", "Sorry, I did not capture any valid input.");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return result;
+	}
+	
 	@Path("/SendDeclineChoice")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -1119,6 +1103,39 @@ public class Manager {
 		
 	}
 	
+	public void addCCAndReplan(Problem problem, double newCC) throws JSONException{
+		String url = uhuraURI + "addCCAndReplan?email=" + problem.getUserID()+
+				"&newCC="+newCC;
+
+		try {
+//			System.out.println("Add conflict URL: " + url);
+			URLConnection conn = new URL(url).openConnection();
+			conn.setConnectTimeout(3000);
+			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			StringBuilder sb = new StringBuilder();
+	
+			String inputLine;
+			while ((inputLine = br.readLine()) != null) {
+				sb.append(inputLine);
+			}			
+			br.close();
+		
+//			System.out.println(sb.toString());
+			parseSolution(sb.toString());           
+
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		
+	}
+	
 	public void addTemporalConflictAndReplan(Problem problem, JSONObject temporalRelaxation) throws JSONException{
 		String url = uhuraURI + "addTemporalConflictAndReplan?email=" + problem.getUserID()+
 				"&constraintID="+temporalRelaxation.getString("id")+
@@ -1155,6 +1172,7 @@ public class Manager {
 		}		
 		
 	}
+
 	
 	public void addTemporalConflictAndReplan(Problem problem, String id, boolean relaxedLB, boolean relaxedUB, 
 			double newLBValue, double newUBValue) throws JSONException{
@@ -1265,12 +1283,29 @@ public class Manager {
 				StringBuilder sb = new StringBuilder();
 				
 				if (currentSessionState != SOLUTION_FOUND){
-					sb.append("Ok. I have found a plan for you. ");
+//					sb.append("Ok. I have found a plan for you. ");
+					sb.append("Ok. ");
 				} else {
-					sb.append("Ok. I have found another plan for you. ");
+					int randomNum = (int) (Math.random() * 3);
+					if (randomNum == 0){
+						sb.append("Ok. I have another plan for you. ");
+					} else if (randomNum == 1){
+						sb.append("Ok. I have found another plan for you. ");
+					}
 				}				
-				sb.append(currentSolution.getDescription(prevDecisions, prevTemporalRelaxations, prevSemanticRelaxations));					
-				sb.append("Is it ok?");
+				sb.append(currentSolution.getDescription(prevDecisions, prevCCRelaxations, prevTemporalRelaxations, prevSemanticRelaxations));	
+				
+				int randomNum = (int) (Math.random() * 4);
+				
+				if (randomNum == 0){
+					sb.append("is that alright?");
+				} else if (randomNum == 1){
+					sb.append("does it work for you?");
+				} else if (randomNum == 2){
+					sb.append("sounds good?");
+				} else {
+					sb.append("Is it ok?");
+				}				
 				
 				result.put("text_output", sb.toString());
 				
@@ -1303,6 +1338,28 @@ public class Manager {
 				MySQLAccess newAccess = new MySQLAccess("restaurant");
 				HashMap<String,String> requirements = new HashMap<String,String>();
 				requirements.put("cuisine", "Korean");
+				ArrayList<Location> locations = newAccess.getLocations(requirements);
+				for (Location location : locations){
+					task.addCandidate(location);
+				}
+				newAccess.close();
+				
+			} else if (cuisine.equalsIgnoreCase("thai")){
+				
+				MySQLAccess newAccess = new MySQLAccess("restaurant");
+				HashMap<String,String> requirements = new HashMap<String,String>();
+				requirements.put("cuisine", "Thai");
+				ArrayList<Location> locations = newAccess.getLocations(requirements);
+				for (Location location : locations){
+					task.addCandidate(location);
+				}
+				newAccess.close();
+				
+			} else if (cuisine.equalsIgnoreCase("vietnamese")){
+				
+				MySQLAccess newAccess = new MySQLAccess("restaurant");
+				HashMap<String,String> requirements = new HashMap<String,String>();
+				requirements.put("cuisine", "Vietnamese");
 				ArrayList<Location> locations = newAccess.getLocations(requirements);
 				for (Location location : locations){
 					task.addCandidate(location);
@@ -1344,6 +1401,19 @@ public class Manager {
 			}
 			newAccess.close();
 		
+		} else if (destination.equals("flower shop")){
+			
+			MySQLAccess newAccess = new MySQLAccess("shopping");
+			HashMap<String,String> requirements = new HashMap<String,String>();
+			requirements.put("type", "flowers and gifts");
+			requirements.put("subtype1", "florists");
+
+			ArrayList<Location> locations = newAccess.getLocations(requirements);
+			for (Location location : locations){
+				task.addCandidate(location);
+			}
+			newAccess.close();
+		
 		} else if (destination.equals("grocery store")){
 			
 			MySQLAccess newAccess = new MySQLAccess("food");
@@ -1376,7 +1446,7 @@ public class Manager {
 		
 		} else if (destination.equalsIgnoreCase("home")){
 			
-			task.addCandidate(new Location("Home",42.357406, -71.107672));
+			task.addCandidate(new Location("Home",42.359954, -71.102263));
 
 		} else if (destination.equalsIgnoreCase("harvard")){
 			

@@ -12,6 +12,7 @@ public class Solution {
 
 	private int index = 1;
 	private JSONArray activities = new JSONArray();
+	private JSONArray ccRelaxations = new JSONArray();
 	private JSONArray temporalRelaxations = new JSONArray();
 	private JSONArray semanticRelaxations = new JSONArray();
 	private JSONArray pois = new JSONArray();
@@ -44,6 +45,7 @@ public class Solution {
 			activities = obj.getJSONArray("activities");
 			temporalRelaxations = obj.getJSONArray("temporalRelaxations");
 			semanticRelaxations = obj.getJSONArray("semanticRelaxations");
+			ccRelaxations = obj.getJSONArray("ccRelaxations");
 			pois = obj.getJSONArray("pois");
 			decisions = obj.getJSONArray("decisions");
 		} catch (JSONException e) {
@@ -72,6 +74,10 @@ public class Solution {
 		return temporalRelaxations;
 	}
 	
+	public JSONArray getCCRelaxations(){
+		return ccRelaxations;
+	}
+	
 	public JSONArray getDecisions(){
 		return decisions;
 	}
@@ -98,6 +104,7 @@ public class Solution {
 			}
 			
 			obj.put("decisions", decisions);
+			obj.put("ccRelaxations", ccRelaxations);
 			obj.put("temporalRelaxations", temporalRelaxations);
 			obj.put("semanticRelaxations", semanticRelaxations);
 			obj.put("activities", activities);
@@ -112,6 +119,7 @@ public class Solution {
 	}
 	
 	public String getDescription(ArrayList<String> prevDecisions, 
+			ArrayList<String> prevCCRelaxations,
 			ArrayList<String> prevTemporalRelaxations,
 			ArrayList<String> prevSemanticRelaxations){
 
@@ -152,7 +160,7 @@ public class Solution {
 			prevDecisions.clear();
 		}
 		
-		if (temporalRelaxations.length() == 0 && prevTemporalRelaxations.size() > 0){
+		if (ccRelaxations.length() == 0 && temporalRelaxations.length() == 0 && prevTemporalRelaxations.size() > 0){
 			sb.append("You will be on time for everything .");
 		}
 		
@@ -234,6 +242,22 @@ public class Solution {
 		} else {
 			prevTemporalRelaxations.clear();
 		}
+		
+		prevCCRelaxations.clear();
+		if (ccRelaxations.length() > 0){
+			for (int i = 0; i < ccRelaxations.length(); i++){
+				try {
+					JSONObject ccRelaxation = ccRelaxations.getJSONObject(i);	
+					sb.append(ccRelaxation.getString("description") + ". ");
+					prevCCRelaxations.add(ccRelaxation.getString("description"));
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		
 
 		return sb.toString();
 	}
