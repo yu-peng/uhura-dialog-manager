@@ -2,7 +2,6 @@ package mysql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -59,10 +58,10 @@ public class MySQLAccess {
 		ArrayList<HashMap<String,String>> results = getPOIs(requirements);
 		for (HashMap<String,String> result : results){
 //			System.out.print("Candidate -- ");
-			for (String key: result.keySet()){
-	            String value = result.get(key);  
+//			for (String key: result.keySet()){
+//	            String value = result.get(key);  
 //	            System.out.print(key + ": " + value + "; "); 				
-			}
+//			}
 //			System.out.print("\n"); 
 			locations.add(new Location(result));
 		}

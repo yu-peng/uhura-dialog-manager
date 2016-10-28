@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -23,7 +21,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -88,29 +85,11 @@ public class Manager {
 		agreedTemporalRelaxations = new HashSet<String>();
 		
 		tripOrigin = new Location("Home",42.359954, -71.102263);
-//		tripOrigin = new Location("Hilton Midtown",40.762283, -73.979691);
 				
 		tripOrigin.setDepartureTime(String.format("%02d", departureHour) + ":" + String.format("%02d", departureMinute));
 		tripOrigin.setRelaxable(true);
 		currentPlanningProblem.setOrigin(tripOrigin);
-		
-//		Task newTask1 = new Task("Amtrak Station",TaskType.Full);
-//		newTask1.setDuration(30);
-//		newTask1.setRelaxable(true);
-//		Location newLocation1 = new Location("South Station",42.35187759999999,-71.05510420000002);
-//		newTask1.addCandidate(newLocation1);
-//		Location newLocation2 = new Location("Back Bay",42.347340, -71.075985);
-//		newTask1.addCandidate(newLocation2);
-//		currentPlanningProblem.addActivity(newTask1);
-//		
-//		Task newTask2 = new Task("Chinese Restaurant",TaskType.Full);
-//		newTask2.setDuration(30);
-//		newTask2.setRelaxable(true);
-//		Location newLocation3 = new Location("Mary Chung",42.363660, -71.100967);
-//		newTask2.addCandidate(newLocation3);
-//		Location newLocation4 = new Location("Shanghai Fresh",42.366342, -71.105078);
-//		newTask2.addCandidate(newLocation4);
-//		currentPlanningProblem.addActivity(newTask2);
+
 	}
 	
 	@Path("/ResetSession")

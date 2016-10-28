@@ -86,29 +86,6 @@ public class Problem {
 				activityArray.put(activity.getJSONObject());
 			}
 			
-			// Add a dummy activity for stop at South station
-//			JSONObject dummyActivity = new JSONObject();
-//			dummyActivity.put("index", 0);
-//			dummyActivity.put("type", 2);
-//			dummyActivity.put("name", "South Station, Boston, MA, United States");
-//			dummyActivity.put("description", "South Station, Boston, MA, United States");
-//			dummyActivity.put("order", 0);
-//			dummyActivity.put("time", 0);
-//			dummyActivity.put("duration", 30);
-//			dummyActivity.put("relaxable", true);
-//			
-//			JSONArray candidates = new JSONArray();
-//			JSONObject dummyCandidate = new JSONObject();
-//			dummyCandidate.put("index", 0);
-//			dummyCandidate.put("name", "South Station, Boston, MA, United States");
-//			dummyCandidate.put("description", "");
-//			dummyCandidate.put("lat", 42.35187759999999);
-//			dummyCandidate.put("lon", -71.05510420000002);
-//			dummyCandidate.put("preferred", false);
-//			candidates.put(dummyCandidate);
-//			dummyActivity.put("candidates", candidates);
-//
-//			activityArray.put(dummyActivity);
 			obj.put("activities", activityArray);
 			
 		} catch (JSONException e) {
