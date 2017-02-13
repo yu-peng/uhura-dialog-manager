@@ -61,8 +61,6 @@ public class Manager {
 	public static boolean problemChanged = true;
 	static int departureHour = 18; // 18:00
 	static int departureMinute = 0; // 18:00
-
-	public static String uhuraURI = "http://uhura.csail.mit.edu:8080/uhura-web-interface/planner/";
 	
 	public static void main(String[] args){
 		int departureTime = 18*60; // 18:00
@@ -85,6 +83,9 @@ public class Manager {
 		agreedTemporalRelaxations = new HashSet<String>();
 		
 		tripOrigin = new Location("Home",42.359954, -71.102263);
+		
+		departureHour = 18;
+		departureMinute = 0;
 				
 		tripOrigin.setDepartureTime(String.format("%02d", departureHour) + ":" + String.format("%02d", departureMinute));
 		tripOrigin.setRelaxable(true);
@@ -415,6 +416,26 @@ public class Manager {
 			}
 		}
 		
+		return result;
+	}
+	
+	@Path("/SetOriginLatLon")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public JSONObject setOriginLatLon(
+			@DefaultValue("-1000") @QueryParam("originLat") double originLat,
+			@DefaultValue("-1000") @QueryParam("originLon") double originLon) {
+		
+		JSONObject result = new JSONObject();
+		if (tripOrigin != null){
+			tripOrigin.setLatLon(originLat, originLon);
+			try {
+				result.put("message", "trip origin " + tripOrigin.getName() + " changed to " + originLat + "," + originLon);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return result;
 	}
 	
@@ -1014,7 +1035,7 @@ public class Manager {
 		
 //		System.out.println("Sending problem: " + problem.getJSONObject().toString());
 		
-		String url = uhuraURI + "updateProblem?";		
+		String url = Initialization.uhuraPlannerURI + "updateProblem?";		
 		
 		try {
 			HttpClient httpClient = HttpClientBuilder.create().build(); //Use this instead 
@@ -1052,7 +1073,7 @@ public class Manager {
 	}
 	
 	public void nextSolution(Problem problem){
-		String url = uhuraURI + "replan?email=" + problem.getUserID();		
+		String url = Initialization.uhuraPlannerURI + "replan?email=" + problem.getUserID();		
 
 		try {
 			URLConnection conn = new URL(url).openConnection();
@@ -1083,7 +1104,7 @@ public class Manager {
 	}
 	
 	public void addCCAndReplan(Problem problem, double newCC) throws JSONException{
-		String url = uhuraURI + "addCCAndReplan?email=" + problem.getUserID()+
+		String url = Initialization.uhuraPlannerURI + "addCCAndReplan?email=" + problem.getUserID()+
 				"&newCC="+newCC;
 
 		try {
@@ -1116,7 +1137,7 @@ public class Manager {
 	}
 	
 	public void addTemporalConflictAndReplan(Problem problem, JSONObject temporalRelaxation) throws JSONException{
-		String url = uhuraURI + "addTemporalConflictAndReplan?email=" + problem.getUserID()+
+		String url = Initialization.uhuraPlannerURI + "addTemporalConflictAndReplan?email=" + problem.getUserID()+
 				"&constraintID="+temporalRelaxation.getString("id")+
 				"&isLB="+temporalRelaxation.getString("relaxedLB")+
 				"&isUB="+temporalRelaxation.getString("relaxedUB")+
@@ -1155,7 +1176,7 @@ public class Manager {
 	
 	public void addTemporalConflictAndReplan(Problem problem, String id, boolean relaxedLB, boolean relaxedUB, 
 			double newLBValue, double newUBValue) throws JSONException{
-		String url = uhuraURI + "addTemporalConflictAndReplan?email=" + problem.getUserID()+
+		String url = Initialization.uhuraPlannerURI + "addTemporalConflictAndReplan?email=" + problem.getUserID()+
 				"&constraintID="+id+
 				"&isLB="+relaxedLB+
 				"&isUB="+relaxedUB+
@@ -1200,7 +1221,7 @@ public class Manager {
 		assignments.put(assignment);
 		obj.put("assignments", assignments);
 
-		String url = uhuraURI + "addDecisionConflictAndReplan?";
+		String url = Initialization.uhuraPlannerURI + "addDecisionConflictAndReplan?";
 
 		try {
 			HttpClient httpClient = HttpClientBuilder.create().build(); //Use this instead 

@@ -56,6 +56,11 @@ public class Location {
 		return longitude;
 	}
 	
+	public void setLatLon(double _lat, double _lon){
+		latitude = _lat;
+		longitude = _lon;
+	}
+	
 	public String getAddress(){
 		return address;
 	}
